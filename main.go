@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"time"
 
 	"github.com/ha666/logs"
 	"github.com/ha666/ws-common"
@@ -9,17 +10,23 @@ import (
 )
 
 //服务器
-const addr = "wss://ha666.com/echo"
+const addr = "ws://ha666.com:8888/echo"
 
 //本机，需要绑定hosts
 //const addr = "ws://websocket.com/echo"
 
 func main() {
-	conn := &recws.RecConn{}
-	conn.Dial(addr, nil)
-	for {
-		receive(conn)
+	for i := 0; i < 100; i++ {
+		go func(i int) {
+			time.Sleep(time.Duration(i*100) * time.Millisecond)
+			conn := &recws.RecConn{}
+			conn.Dial(addr, nil)
+			for {
+				receive(conn)
+			}
+		}(i)
 	}
+	select {}
 }
 
 func receive(conn *recws.RecConn) {

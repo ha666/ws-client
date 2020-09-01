@@ -9,6 +9,7 @@ github.com/gorilla/websocket
 # github.com/ha666/golibs v2020.712.900+incompatible
 ## explicit
 github.com/ha666/golibs
+github.com/ha666/golibs/util/grand
 # github.com/ha666/logs v2019.830.1004+incompatible
 ## explicit
 github.com/ha666/logs
