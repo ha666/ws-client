@@ -2,21 +2,20 @@ package main
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/ha666/golibs/util/grand"
 	"github.com/ha666/logs"
 	"github.com/ha666/ws-common/protocol"
 	"github.com/maurodelazeri/gorilla-reconnect"
 )
 
 func Ping(c *recws.RecConn, dst proto.Message) {
-	val, ok := dst.(*protocol.Ping)
+	_, ok := dst.(*protocol.Ping)
 	if !ok {
 		logs.Error("解析ping消息出错")
 		return
 	}
-	if  grand.Rand(0,9)==0{
-		logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
-	}
+	//if grand.Rand(0, 1) == 0 {
+	//	logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
+	//}
 }
 
 func Pong(c *recws.RecConn, dst proto.Message) {
