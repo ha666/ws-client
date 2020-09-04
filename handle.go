@@ -8,13 +8,13 @@ import (
 )
 
 func Ping(c *recws.RecConn, dst proto.Message) {
-	_, ok := dst.(*protocol.Ping)
+	val, ok := dst.(*protocol.Ping)
 	if !ok {
 		logs.Error("解析ping消息出错")
 		return
 	}
 	//if grand.Rand(0, 1) == 0 {
-	//	logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
+	logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
 	//}
 }
 

@@ -2,52 +2,71 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
+	"github.com/ha666/golibs"
 	"github.com/ha666/logs"
 	"github.com/ha666/ws-common"
+	"github.com/ha666/ws-common/protocol"
 	"github.com/maurodelazeri/gorilla-reconnect"
 )
 
 //服务器
-const addr = "ws://ha666.com:8888/echo"
+//const addr = "ws://192.168.1.92:8888/echo"
 
 //本机，需要绑定hosts
-//const addr = "ws://websocket.com/echo"
+const addr = "ws://websocket.com/process"
+
+var (
+	conn *recws.RecConn
+)
 
 func main() {
-	for i := 0; i < 100; i++ {
-		go func(i int) {
-			time.Sleep(time.Duration(i*100) * time.Millisecond)
-			conn := &recws.RecConn{}
-			conn.Dial(addr, nil)
-			for {
-				receive(conn)
-			}
-		}(i)
+	conn = &recws.RecConn{
+		RecIntvlMin: 5 * time.Second,
+		RecIntvlMax: 30 * time.Second,
 	}
+	conn.Dial(addr, nil)
+	defer conn.Close()
+	go read(conn)
+	go write(conn)
 	select {}
 }
 
-func receive(conn *recws.RecConn) {
-	dst, messageType, err := ws_common.ReadMessage(conn)
-	if err != nil {
-		logs.Error("read err:", err)
-		return
+func read(conn *recws.RecConn) {
+	for {
+		dst, messageType, err := ws_common.ReadMessageWithAutoConnect(conn)
+		if err != nil {
+			logs.Error("read err:", err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		if bytes.Compare(messageType, ws_common.MESSAGEPING) == 0 {
+			Ping(conn, dst)
+		} else if bytes.Compare(messageType, ws_common.MESSAGEPONG) == 0 {
+			Pong(conn, dst)
+		} else if bytes.Compare(messageType, ws_common.MESSAGEREAD) == 0 {
+			Read(conn, dst)
+		} else if bytes.Compare(messageType, ws_common.MESSAGEWRITE) == 0 {
+			Write(conn, dst)
+		} else if bytes.Compare(messageType, ws_common.MESSAGESUBSCRIPTION) == 0 {
+			Subscription(conn, dst)
+		} else if bytes.Compare(messageType, ws_common.MESSAGEPUBLISH) == 0 {
+			Publish(conn, dst)
+		} else {
+			logs.Error("无效的消息类型")
+		}
 	}
-	if bytes.Compare(messageType, ws_common.MESSAGEPING) == 0 {
-		Ping(conn, dst)
-	} else if bytes.Compare(messageType, ws_common.MESSAGEPONG) == 0 {
-		Pong(conn, dst)
-	} else if bytes.Compare(messageType, ws_common.MESSAGEREAD) == 0 {
-		Read(conn, dst)
-	} else if bytes.Compare(messageType, ws_common.MESSAGEWRITE) == 0 {
-		Write(conn, dst)
-	} else if bytes.Compare(messageType, ws_common.MESSAGESUBSCRIPTION) == 0 {
-		Subscription(conn, dst)
-	} else if bytes.Compare(messageType, ws_common.MESSAGEPUBLISH) == 0 {
-		Publish(conn, dst)
-	} else {
-		logs.Error("无效的消息类型")
+}
+
+func write(conn *recws.RecConn) {
+	for {
+		time.Sleep(5 * time.Second)
+		if err := ws_common.WriteMessageWithAutoConnect(conn, ws_common.MESSAGEPING, &protocol.Ping{
+			PingVal: fmt.Sprintf("当前时间:%s", golibs.StandardTime()),
+		}); err != nil {
+			logs.Error("发送心跳失败:%s", err.Error())
+		}
 	}
 }
