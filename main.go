@@ -13,7 +13,7 @@ import (
 )
 
 //服务器
-//const addr = "ws://192.168.1.92:8888/echo"
+//const addr = "ws://192.168.1.92:8888/process"
 
 //本机，需要绑定hosts
 const addr = "ws://websocket.com/process"
@@ -23,14 +23,16 @@ var (
 )
 
 func main() {
-	conn = &recws.RecConn{
-		RecIntvlMin: 5 * time.Second,
-		RecIntvlMax: 30 * time.Second,
+	for i := 0; i < 10; i++ {
+		conn := &recws.RecConn{
+			RecIntvlMin:      5 * time.Second,
+			RecIntvlMax:      30 * time.Second,
+			HandshakeTimeout: 10 * time.Millisecond,
+		}
+		conn.Dial(addr, nil)
+		go read(conn)
+		go ping(conn)
 	}
-	conn.Dial(addr, nil)
-	defer conn.Close()
-	go read(conn)
-	go write(conn)
 	select {}
 }
 
@@ -60,9 +62,9 @@ func read(conn *recws.RecConn) {
 	}
 }
 
-func write(conn *recws.RecConn) {
+func ping(conn *recws.RecConn) {
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 		if err := ws_common.WriteMessageWithAutoConnect(conn, ws_common.MESSAGEPING, &protocol.Ping{
 			PingVal: fmt.Sprintf("当前时间:%s", golibs.StandardTime()),
 		}); err != nil {

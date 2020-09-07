@@ -8,23 +8,23 @@ import (
 )
 
 func Ping(c *recws.RecConn, dst proto.Message) {
-	val, ok := dst.(*protocol.Ping)
+	_, ok := dst.(*protocol.Ping)
 	if !ok {
 		logs.Error("解析ping消息出错")
 		return
 	}
 	//if grand.Rand(0, 1) == 0 {
-	logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
+	//logs.Info("\tmessageType:%s\tmessage: %s", "ping", val.PingVal)
 	//}
 }
 
 func Pong(c *recws.RecConn, dst proto.Message) {
-	val, ok := dst.(*protocol.Pong)
+	_, ok := dst.(*protocol.Pong)
 	if !ok {
 		logs.Error("解析pong消息出错")
 		return
 	}
-	logs.Info("\tmessageType:%s\tmessage: %s", "pong", val.PongVal)
+	//logs.Info("\tmessageType:%s\tmessage: %s", "pong", val.PongVal)
 }
 
 func Read(c *recws.RecConn, dst proto.Message) {
